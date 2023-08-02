@@ -5,10 +5,10 @@
 //  Created by d on 2023/07/16.
 //
 
-import UIKit
+import Foundation
 
 class MVDataController: NSObject {
-  let fileName: String
+  var fileName: String?
   
   let realData: Data
   let treeLock: NSLock

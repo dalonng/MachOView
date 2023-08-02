@@ -36,7 +36,7 @@ public class MVNode: NSObject {
 
   func insert(node: MVNode) {
     guard let layout = userInfo.layout else { return }
-    layout.dataController?.treeLock.lock()
+    layout.dataController.treeLock.lock()
     
     let insertIndex = children.firstIndex { node.dataRange.lowerBound < $0.dataRange.lowerBound }
 //    
@@ -50,8 +50,8 @@ public class MVNode: NSObject {
 //    NotificationCenter.default.post(name: NSNotification.Name.dataTreeDidChanged,
 //                                    object: layout.dataController)
 
-    layout.dataController?.updateTreeView(self)
-    layout.dataController?.treeLock.unlock()
+    layout.dataController.updateTreeView(node: self)
+    layout.dataController.treeLock.unlock()
   }
   
   func insert(_ caption: String, location: Int, length: Int) -> MVNode {
@@ -77,17 +77,17 @@ public class MVNode: NSObject {
     if self.userInfo == aUserInfo {
       return self
     }
-    for n in children where n.findNode(by: aUserInfo) {
+    for n in children where (n.findNode(by: aUserInfo) != nil) {
       return n
     }
     return nil
   }
   
   func openDetails() {
-    guard let layout = userInfo.layout else { return nil }
+    guard let layout = userInfo.layout else { return }
 
-    
-    MVLayout * layout = [userInfo objectForKey:MVLayoutUserInfoKey];
+    let layout = userInfo.layout
+
     FILE * pFile = fopen(CSTRING(layout.archiver.swapPath), "r");
     if (pFile != NULL)
     {

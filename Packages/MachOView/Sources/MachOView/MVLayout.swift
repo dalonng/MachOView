@@ -8,25 +8,26 @@
 import Foundation
 
 final class MVLayout: NSObject {
-  weak var rootNode: MVNode?
-  weak var dataController: MVDataController?
+  let rootNode: MVNode
+  let dataController: MVDataController
   let imageOffset: Int
   let imageSize: Int
   let backgroundThread: Thread
   let archiver: MVArchiver
   
-  init(rootNode: MVNode? = nil, dataController: MVDataController? = nil, imageOffset: Int, imageSize: Int, backgroundThread: Thread, archiver: MVArchiver) {
+  init?(rootNode: MVNode, dataController: MVDataController, imageOffset: Int, imageSize: Int, backgroundThread: Thread, archiver: MVArchiver) {
     self.rootNode = rootNode
     self.dataController = dataController
-    self.imageOffset = rootNode?.dataRange.location
-    self.imageSize = rootNode?.dataRange.length
-    self.backgroundThread = Thread(target: self, selector: #selector(doBackgroundTasks), object: nil)
+    self.imageOffset = rootNode.dataRange.lowerBound
+    self.imageSize = rootNode.dataRange.upperBound - self.imageOffset
+    self.backgroundThread = Thread(target: self,
+                                   selector: #selector(doBackgroundTasks),
+                                   object: nil)
     
     do {
-      let swapFilePath = try? createTemporaryFile()
-      let swapFileUrl = URL(fileURLWithPath: swapFilePath)
+      var swapFileUrl = try createTemporaryFile()
       let swapPath = swapFileUrl.append(path: ".\(dataController.fileName)")
-      self.archiver = MVArchiver(path: swapPath)
+      self.archiver = MVArchiver(pathUrl: swapPath)
     } catch {
       return nil
     }
@@ -44,15 +45,14 @@ final class MVLayout: NSObject {
   }
   
   func image(at location: Int) -> Data.SubSequence {
-    dataController?.realData[location...]
+    dataController.realData[location...]
   }
   
   func print(exception: NSException, caption: String) {
-    printf("\(Exception): Exception (\(caption)), \(exception.name)")
+    printf("\(exception): Exception (\(caption)), \(exception.name)")
     printf("     Reason: \(exception.reason)");
     printf("  User Info: \(exception.userInfo)");
     printf("  Backtrace: \(exception.callStackSymbols)");
-    }
   }
 
   var is64bit: Bool {
@@ -63,7 +63,7 @@ final class MVLayout: NSObject {
     
   }
   
-  func doBackgroundTasks() {
+  @objc func doBackgroundTasks() {
     archiver.halt()
   }
   

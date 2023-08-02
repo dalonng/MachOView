@@ -5,7 +5,7 @@
 //  Created by d on 2023/07/16.
 //
 
-import UIKit
+import Foundation
 
 final class MVArchiver: NSObject {
   
